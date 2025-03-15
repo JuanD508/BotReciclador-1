@@ -1,0 +1,69 @@
+import discord
+from discord.ext import commands
+import random
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="$", intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f'We have logged in as {bot.user}')
+
+@bot.command()
+async def hello(ctx):
+    await ctx.send(f'Hola, soy un bot {bot.user}!')
+
+@bot.command()
+async def caneca(ctx, eleccion: str):
+    """Elige una caneca: verde, negra o blanca."""
+    opciones = ["verde", "negra", "blanca"]
+
+    if eleccion not in opciones:
+        await ctx.send("❌ Por favor elige entre: verde, negra o blanca.")
+        return
+
+    resultado = None
+    if eleccion == "verde":
+        with open('images/CanecaV.png', 'rb') as f:
+            picture = discord.File(f) 
+            await ctx.send(file=picture)
+        resultado = "Residuos orgánicos aprovechables, como restos de comida, desechos agrícolas, restos de poda de jardín, entre otros."
+    elif eleccion == "negra":
+        with open('images/CanecaN.png', 'rb') as f:
+            picture = discord.File(f)
+            await ctx.send(file=picture)
+        resultado = "Residuos no aprovechables, como el papel higiénico, servilletas, papeles metalizados y cartones contaminados con comida."
+    elif eleccion == "blanca":
+        with open('images/CanecaB.png', 'rb') as f:
+            picture = discord.File(f)
+            await ctx.send(file=picture)
+        resultado = "Residuos aprovechables como plástico, vidrio, metales, papel y cartón."
+
+    await ctx.send(resultado)
+
+@bot.command()
+async def trivia(ctx):
+    preguntas = {
+        "¿En cuál caneca se echan los residuos orgánicos aprovechables?": "Caneca verde",
+        "¿En cuál caneca se echan los residuos aprovechables?": "Caneca blanca",
+        "¿En cuál caneca se echan los residuos no aprovechables?": "Caneca negra"
+    }
+    pregunta, respuesta = random.choice(list(preguntas.items()))
+    await ctx.send(pregunta)
+
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+
+    try:
+        mensaje = await bot.wait_for("message", check=check, timeout=15.0)
+        if mensaje.content.lower() == respuesta.lower():
+            await ctx.send(f'🎉 ¡Correcto, {ctx.author.mention}!')
+        else:
+            await ctx.send(f'❌ Incorrecto. La respuesta era {respuesta}.')
+    except discord.errors.TimeoutError:
+        await ctx.send(f'⏰ Se acabó el tiempo. La respuesta era {respuesta}.')
+
+
+bot.run("Tu token aqui")
