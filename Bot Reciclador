@@ -10,18 +10,36 @@ bot = commands.Bot(command_prefix="$", intents=intents)
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
+    guild = bot.guilds[0]
+
+    if guild:
+
+        channel = guild.system_channel
+
+        if channel:
+            await channel.send('Pon el comando "!funciones" para saber qué puedo hacer.')
+        else:
+            print("❌ No se pudo encontrar el canal por defecto del servidor.")
+    else:
+        print("❌ El bot no está conectado a ningún servidor.")
 
 @bot.command()
-async def hello(ctx):
-    await ctx.send(f'Hola, soy un bot {bot.user}!')
+async def funciones(ctx):
+    await ctx.send(f'Mis principales funciones pueden ser explicarte que tienes que echar en las respectivas canecas ( !caneca ), hacerte preguntas para verificar que si hayas aprendido correctamente( !trivia ) y decirte que puedes hacer con cada caneca de basura ( !que_hacer_con ).')
 
 @bot.command()
-async def caneca(ctx, eleccion: str):
+async def caneca(ctx, *, eleccion: str = None):
     """Elige una caneca: verde, negra o blanca."""
     opciones = ["verde", "negra", "blanca"]
 
+    if eleccion is None:
+        await ctx.send("❌ Por favor elige entre las canecas: verde, negra o blanca.")
+        return
+
+    eleccion = eleccion.lower()
+
     if eleccion not in opciones:
-        await ctx.send("❌ Por favor elige entre: verde, negra o blanca.")
+        await ctx.send("❌ Por favor elige entre las canecas: verde, negra o blanca.")
         return
 
     resultado = None
@@ -41,6 +59,45 @@ async def caneca(ctx, eleccion: str):
             await ctx.send(file=picture)
         resultado = "Residuos aprovechables como plástico, vidrio, metales, papel y cartón."
 
+    await ctx.send(resultado)
+
+@bot.command()
+async def que_hacer_con(ctx, *, eleccion: str = None):
+    """Elige una caneca: verde, negra o blanca."""
+    opciones = ["caneca verde", "caneca negra", "caneca blanca"]
+
+    if eleccion is None:
+        await ctx.send("❌ Por favor elige entre: caneca verde, caneca negra o caneca blanca.")
+        return
+
+    eleccion = eleccion.lower()
+
+    if eleccion not in opciones:
+        await ctx.send("❌ Por favor elige entre: caneca verde, caneca negra o caneca blanca.")
+        return
+
+    resultado = None
+    if eleccion == "caneca verde":
+        resultado = "Con toda esta basura puedes hacer compost para tus plantas, o darsela al camion de la basura si no tienes plantas."
+        with open('images/Compost.jpg', 'rb') as f:
+            picture = discord.File(f)
+            await ctx.send(file=picture)
+        with open('images/CamionB.jpg', 'rb') as f:
+            picture = discord.File(f)
+            await ctx.send(file=picture)
+    elif eleccion == "caneca negra":
+        resultado = "Con toda esta basura puedes simplemente darsela al camion de basura, ya que tu no puedes hacer nada más con esta."
+        with open('images/CamionB.jpg', 'rb') as f:
+            picture = discord.File(f)
+            await ctx.send(file=picture)
+    elif eleccion == "caneca blanca":
+        resultado = "Con toda esta basura puedes hacer manualidades si te gusta, o venderla en un centro de reciclaje para conseguir un dinero extra."
+        with open('images/Manualidades.webp', 'rb') as f:
+            picture = discord.File(f)
+            await ctx.send(file=picture)
+        with open('images/CentroDeR.png', 'rb') as f:
+            picture = discord.File(f)
+            await ctx.send(file=picture)
     await ctx.send(resultado)
 
 @bot.command()
@@ -64,6 +121,5 @@ async def trivia(ctx):
             await ctx.send(f'❌ Incorrecto. La respuesta era {respuesta}.')
     except discord.errors.TimeoutError:
         await ctx.send(f'⏰ Se acabó el tiempo. La respuesta era {respuesta}.')
-
 
 bot.run("Tu token aqui")
